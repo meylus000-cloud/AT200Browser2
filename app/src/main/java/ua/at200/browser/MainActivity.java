@@ -732,9 +732,7 @@ public class MainActivity extends Activity {
         s.setLoadsImagesAutomatically(store.images());
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
-        s.setAppCacheEnabled(true);
-        s.setAppCachePath(getCacheDir().getAbsolutePath() + "/appcache");
-        s.setAppCacheMaxSize(10 * 1024 * 1024);
+        enableAppCache(s);
         s.setGeolocationEnabled(true);
         s.setGeolocationDatabasePath(getFilesDir().getPath());
         s.setBuiltInZoomControls(true);
@@ -749,6 +747,18 @@ public class MainActivity extends Activity {
         s.setDefaultTextEncodingName("UTF-8");
         s.setCacheMode(WebSettings.LOAD_DEFAULT);
         s.setUserAgentString(tab.desktop ? DESKTOP_UA : null);
+    }
+
+    /** Кеш додатків є на Android 4.0, але його прибрано з нових SDK, тому викликаємо через рефлексію. */
+    private void enableAppCache(WebSettings s) {
+        try {
+            WebSettings.class.getMethod("setAppCacheEnabled", Boolean.TYPE).invoke(s, Boolean.TRUE);
+            WebSettings.class.getMethod("setAppCachePath", String.class)
+                    .invoke(s, getCacheDir().getAbsolutePath() + "/appcache");
+            WebSettings.class.getMethod("setAppCacheMaxSize", Long.TYPE)
+                    .invoke(s, Long.valueOf(10L * 1024 * 1024));
+        } catch (Throwable ignored) {
+        }
     }
 
     private void loadHome(Tab t) {
